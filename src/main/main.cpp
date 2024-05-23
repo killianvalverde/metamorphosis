@@ -42,14 +42,15 @@ int main(int argc, char* argv[])
         
         ap.add_help_menu()
                 .description("Rename a set of files following a specified patern.")
-                .epilogue("Example:\n  $ metamorphosis \"./\" -nm \"Blue - \" -nr 1 -sr "
-                          "ALPHABETICALLY IMAGE_SIZE -rx \".*(jpeg|jpg|png).*\"")
+                .epilogue("$ metamorphosis \"./\" -rx \".*(jpeg|jpg|png).*\" -nm \"Blue - \" \\\n"
+                          "    -sr ALPHABETICALLY IMAGE_SIZE")
                 .print_commands(true);
 
         ap.add_key_value_arg("--regex", "-rx")
-                .description("Regex that all file targets have to match.")
+                .description("Regex that all the files have to match in order to be considered.")
                 .values_names("REGEX")
-                .store_into(&prog_args.fltr_regx);
+                .store_into(&prog_args.fltr_regx)
+                .mandatory(true);
 
         ap.add_key_value_arg("--names", "-nm")
                 .description("Names to set.")
