@@ -50,6 +50,7 @@ struct program_args
     std::vector<base_name> bse_nms;
     std::vector<base_number> bse_nrs;
     spd::contain::flags<sort_policies> srt_polics;
+    bool skip_simu;
 };
 
 
