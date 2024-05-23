@@ -73,6 +73,10 @@ int main(int argc, char* argv[])
                 .minmax_values(1, ~0ull)
                 .store_into(&prog_args.srt_polics);
 
+        ap.add_key_arg("--yes", "-y")
+                .description("Assume yes as the answer to all prompts. It skips the simulation.")
+                .store_presence(&prog_args.skip_simu);
+
         ap.add_keyless_arg("DIR")
                 .description("Directory in which perform the operation.")
                 .store_into(&prog_args.trg_dir);
