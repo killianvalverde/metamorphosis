@@ -124,5 +124,28 @@ inline bool try_type_cast(
 }
 
 
+template<>
+inline bool try_type_cast(
+    const std::string& arg,
+    std::regex* res,
+    std::error_code* err_code
+) noexcept
+{
+    try
+    {
+        res->assign(arg, std::regex::ECMAScript | std::regex::icase);
+        return true;
+    }
+    catch (...)
+    {
+        assign_type_casting_error_code(
+                static_cast<int>(error_codes::OTHER),
+                err_code);
+    }
+
+    return false;
+}
+
+
 }
 
