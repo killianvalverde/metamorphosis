@@ -64,7 +64,6 @@ int main(int argc, char* argv[])
                 .values_names("INTEGER")
                 .minmax_values(1, ~0ull)
                 .store_into(&prog_args.bse_nrs)
-                .mandatory(true)
                 .values_with_prefix(true);
 
         ap.add_key_value_arg("--sort", "-sr")
