@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
                 
         ap.add_version_arg("--version", "-v")
                 .description("Output version information and exit.")
-                .gplv3_version_information("0.1.0", "2024", "Killian Valverde");
+                .gplv3_version_information("0.2.0", "2024", "Killian Valverde");
 
         ap.parse_args(argc, argv);
         
