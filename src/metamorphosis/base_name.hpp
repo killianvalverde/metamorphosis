@@ -38,15 +38,8 @@ class base_name
 public:
     explicit base_name() noexcept
             : nme_()
-            , beg_(0)
-            , peri_(0)
             , prio_(0)
     {
-    }
-
-    [[nodiscard]] inline size_t get_beginning() const noexcept
-    {
-        return beg_;
     }
     
     [[nodiscard]] inline const std::string& get_name() const noexcept
@@ -54,29 +47,14 @@ public:
         return nme_;
     }
     
-    [[nodiscard]] inline size_t get_period() const noexcept
-    {
-        return peri_;
-    }
-    
     [[nodiscard]] inline size_t get_priority() const noexcept
     {
         return prio_;
     }
 
-    inline void set_beginning(size_t beg) noexcept
-    {
-        beg_ = beg;
-    }
-
     inline void set_name(std::string nme) noexcept
     {
         nme_ = std::move(nme);
-    }
-
-    inline void set_period(size_t peri) noexcept
-    {
-        peri_ = peri;
     }
 
     inline void set_priority(size_t prio) noexcept
@@ -86,10 +64,6 @@ public:
 
 private:
     std::string nme_;
-
-    std::size_t beg_;
-    
-    std::size_t peri_;
     
     std::size_t prio_;
 };
