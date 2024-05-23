@@ -29,6 +29,8 @@
 
 #include <utility>
 
+#include "forward_declarations.hpp"
+#include "program.hpp"
 #include "target_file.hpp"
 
 
@@ -40,11 +42,11 @@ class target_image : public target_file
 public:
     target_image(
             std::filesystem::path fle_pth,
-            std::vector<target_file*>* fles_target,
+            program* prog,
             size_t wth,
             size_t hght
     )
-            : target_file(std::move(fle_pth), fles_target)
+            : target_file(std::move(fle_pth), prog)
             , wth_(wth)
             , hght_(hght)
     {

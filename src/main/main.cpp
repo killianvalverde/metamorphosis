@@ -42,14 +42,15 @@ int main(int argc, char* argv[])
         
         ap.add_help_menu()
                 .description("Rename a set of files following a specified patern.")
-                .epilogue("Example:\n  $ metamorphosis \"./\" -nm \"Blue - \" -nr 1 -sr "
-                          "ALPHABETICALLY IMAGE_SIZE -rx \".*(jpeg|jpg|png).*\"")
+                .epilogue("$ metamorphosis \"./\" -rx \".*(jpeg|jpg|png).*\" -nm \"Blue - \" \\\n"
+                          "    -sr ALPHABETICALLY IMAGE_SIZE")
                 .print_commands(true);
 
         ap.add_key_value_arg("--regex", "-rx")
-                .description("Regex that all file targets have to match.")
+                .description("Regex that all the files have to match in order to be considered.")
                 .values_names("REGEX")
-                .store_into(&prog_args.fltr_regx);
+                .store_into(&prog_args.fltr_regx)
+                .mandatory(true);
 
         ap.add_key_value_arg("--names", "-nm")
                 .description("Names to set.")
@@ -63,7 +64,6 @@ int main(int argc, char* argv[])
                 .values_names("INTEGER")
                 .minmax_values(1, ~0ull)
                 .store_into(&prog_args.bse_nrs)
-                .mandatory(true)
                 .values_with_prefix(true);
 
         ap.add_key_value_arg("--sort", "-sr")
@@ -72,6 +72,10 @@ int main(int argc, char* argv[])
                 .values_names("POLICY")
                 .minmax_values(1, ~0ull)
                 .store_into(&prog_args.srt_polics);
+
+        ap.add_key_arg("--yes", "-y")
+                .description("Assume yes as the answer to all prompts. It skips the simulation.")
+                .store_presence(&prog_args.skip_simu);
 
         ap.add_keyless_arg("DIR")
                 .description("Directory in which perform the operation.")
@@ -82,7 +86,7 @@ int main(int argc, char* argv[])
                 
         ap.add_version_arg("--version", "-v")
                 .description("Output version information and exit.")
-                .gplv3_version_information("0.1.0", "2024", "Killian Valverde");
+                .gplv3_version_information("0.2.0", "2024", "Killian Valverde");
 
         ap.parse_args(argc, argv);
         

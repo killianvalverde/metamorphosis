@@ -48,11 +48,11 @@ bool get_image_size(
         std::size_t* hght
 ) noexcept
 {
-    bool succ = true;
+    bool succs = false;
 
     if (is_jpeg_extension(img_pth))
     {
-        if (!(succ = get_jpeg_image_size(img_pth, wdth, hght)))
+        if (!(succs = get_jpeg_image_size(img_pth, wdth, hght)))
         {
             std::cout << spd::ios::set_light_red_text << "Error, " << img_pth.filename()
                       << " is not a jpeg image" << spd::ios::newl;
@@ -60,14 +60,14 @@ bool get_image_size(
     }
     else if (is_png_extension(img_pth))
     {
-        if (!(succ = get_png_image_size(img_pth, wdth, hght)))
+        if (!(succs = get_png_image_size(img_pth, wdth, hght)))
         {
             std::cout << spd::ios::set_light_red_text << "Error, " << img_pth.filename()
                       << " is not a png image" << spd::ios::newl;
         }
     }
 
-    return succ;
+    return succs;
 }
 
 

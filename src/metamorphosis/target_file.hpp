@@ -31,6 +31,9 @@
 #include <filesystem>
 #include <vector>
 
+#include "forward_declarations.hpp"
+#include "program.hpp"
+
 
 namespace metamorphosis {
 
@@ -38,39 +41,59 @@ namespace metamorphosis {
 class target_file
 {
 public:
-    target_file(std::filesystem::path fle_pth, std::vector<target_file*>* fles_target);
-    
+    target_file(std::filesystem::path fle_pth, program* prog);
+
     virtual ~target_file() = default;
-    
-    bool rename() noexcept;
-    
-    [[nodiscard]] inline const std::filesystem::path& get_file_path() const noexcept
+
+    bool rename(bool simu);
+
+    bool rename_temporary(bool simu);
+
+    inline static bool raw_rename(
+            const std::filesystem::path& src,
+            const std::filesystem::path& trg,
+            bool simu
+    )
     {
-        return fle_pth_;
+        return simu || (::rename(src.c_str(), trg.c_str()) == 0);
     }
 
-    [[nodiscard]] inline const std::string& get_new_file_name() const noexcept
+    inline void reset_rename()
     {
-        return new_fle_nme_;
+        actual_fle_pth_ = orig_fle_pth_;
+    }
+
+    bool simulate_rename();
+
+    [[nodiscard]] inline const std::filesystem::path& get_original_file_path() const noexcept
+    {
+        return orig_fle_pth_;
     }
     
-    inline void set_new_file_name(std::string new_fle_nme) noexcept
+    [[nodiscard]] inline const std::filesystem::path& get_actual_file_path() const noexcept
     {
-        new_fle_nme_ = std::move(new_fle_nme);
+        return actual_fle_pth_;
     }
+    
+    void set_new_file_name(std::string new_fle_nme);
+
+    [[nodiscard]] inline bool original_and_actual_file_path_equal() const noexcept
+    {
+        return orig_fle_pth_ == actual_fle_pth_;
+    }
+
+    void print_rename(const std::filesystem::path& new_path, bool succs) const;
 
 private:
-    std::filesystem::path fle_pth_;
+    std::filesystem::path orig_fle_pth_;
+
+    std::filesystem::path actual_fle_pth_;
     
     std::string new_fle_nme_;
 
-    std::vector<target_file*>* trg_fles_;
+    program* prog_;
     
     std::size_t id_;
-
-    bool dne_;
-
-    bool visitd_;
 
     static std::size_t nxt_id_;
 };

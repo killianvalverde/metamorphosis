@@ -38,11 +38,9 @@ class base_number
 public:
     explicit base_number() noexcept
             : nr_(1)
-            , cur_nr_(0)
+            , cur_nr_(1)
             , digs_(0)
             , inc_nr_(1)
-            , beg_(0)
-            , peri_(0)
             , prio_(0)
     {
     }
@@ -71,10 +69,6 @@ private:
     std::size_t digs_;
     
     std::size_t inc_nr_;
-    
-    std::size_t beg_;
-    
-    std::size_t peri_;
     
     std::size_t prio_;
 };

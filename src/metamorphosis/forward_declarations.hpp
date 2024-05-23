@@ -18,40 +18,25 @@
  */
 
 /**
- * @file        program.hpp
- * @brief       program class header.
+ * @file        forward_declarations.hpp
+ * @brief       forward_declarations header.
  * @author      Killian Valverde
- * @date        2024/05/19
+ * @date        2024/05/23
  */
  
-#ifndef METAMORPHOSIS_PROGRAM_ARGS_HPP
-#define METAMORPHOSIS_PROGRAM_ARGS_HPP
-
-#include <regex>
-#include <vector>
-
-#include <speed/speed.hpp>
-
-#include "base_name.hpp"
-#include "base_number.hpp"
-#include "sort_policies.hpp"
-
-
-namespace metamorphosis {
+#ifndef METAMORPHOSIS_FORWARD_DECLARATIONS_HPP
+#define METAMORPHOSIS_FORWARD_DECLARATIONS_HPP
 
 
 /**
- * @brief       All the arguments that are forwarded to the program class.
+ * @brief       Contians all metamorphosis resources.
  */
-struct program_args
-{
-    spd::filesystem::rx_directory_path trg_dir;
-    std::regex fltr_regx;
-    std::vector<base_name> bse_nms;
-    std::vector<base_number> bse_nrs;
-    spd::contain::flags<sort_policies> srt_polics;
-    bool skip_simu;
-};
+namespace metamorphosis {
+
+
+class program;
+class target_file;
+class target_image;
 
 
 }

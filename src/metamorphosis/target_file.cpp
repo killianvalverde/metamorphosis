@@ -32,78 +32,102 @@
 namespace metamorphosis {
 
 
-target_file::target_file(std::filesystem::path fle_pth, std::vector<target_file*>* fles_target)
-        : fle_pth_(std::move(fle_pth))
+target_file::target_file(std::filesystem::path fle_pth, program* prog)
+        : orig_fle_pth_(fle_pth)
+        , actual_fle_pth_(std::move(fle_pth))
         , new_fle_nme_()
-        , trg_fles_(fles_target)
+        , prog_(prog)
         , id_(nxt_id_++)
-        , dne_(false)
-        , visitd_(false)
 {
 }
 
 
-bool target_file::rename() noexcept
+bool target_file::rename(bool simu)
 {
-    std::filesystem::path new_fle_pth = fle_pth_;
-    int res;
-    
-    if (dne_)
+    std::filesystem::path new_fle_pth = actual_fle_pth_;
+    target_file* trg_fle;
+
+    new_fle_pth.replace_filename(new_fle_nme_);
+
+    if (actual_fle_pth_ == new_fle_pth)
     {
+        print_rename(new_fle_pth, true);
         return true;
     }
-    else if (visitd_)
+
+    if (prog_->file_exists(new_fle_pth, simu) &&
+        ((trg_fle = prog_->get_target_file_from_actual_path(new_fle_pth)) == nullptr ||
+         !trg_fle->rename_temporary(simu)) ||
+        !raw_rename(actual_fle_pth_, new_fle_pth, simu))
     {
-        std::string new_fle_nme = "metamorphosis-tmp-file-base_name-";
-        new_fle_nme += std::to_string(id_);
-        new_fle_pth.replace_filename(new_fle_nme);
+        print_rename(new_fle_pth, false);
+        return false;
     }
-    else
+
+    print_rename(new_fle_pth, true);
+    actual_fle_pth_ = new_fle_pth;
+
+    return true;
+}
+
+
+bool target_file::rename_temporary(bool simu)
+{
+    std::filesystem::path new_fle_pth = actual_fle_pth_;
+
+    std::string new_fle_nme = "metamorphosis-tmp-file-base_name-";
+    new_fle_nme += std::to_string(id_);
+    new_fle_pth.replace_filename(new_fle_nme);
+
+    if (prog_->file_exists(new_fle_pth, simu) ||
+        !raw_rename(actual_fle_pth_, new_fle_pth, simu))
     {
-        new_fle_pth.replace_filename(new_fle_nme_);
-        new_fle_pth += fle_pth_.extension();
-    
-        visitd_ = true;
-    
-        if (fle_pth_ != new_fle_pth &&
-            std::filesystem::exists(new_fle_pth))
-        {
-            for (auto& trg_fle : *trg_fles_)
-            {
-                if (trg_fle->fle_pth_ == new_fle_pth)
-                {
-                    if (trg_fle->rename() != 0)
-                    {
-                        dne_ = true;
-                        return false;
-                    }
-                    
-                    break;
-                }
-            }
-        }
-        
-        dne_ = true;
+        print_rename(new_fle_pth, false);
+        return false;
     }
-    
+
+    print_rename(new_fle_pth, true);
+    actual_fle_pth_ = new_fle_pth;
+
+    return true;
+}
+
+
+bool target_file::simulate_rename()
+{
+    return false;
+}
+
+
+void target_file::set_new_file_name(std::string new_fle_nme)
+{
+    std::string extensn = orig_fle_pth_.extension();
+
+    std::transform(extensn.begin(), extensn.end(), extensn.begin(), [](unsigned char c) {
+        return std::tolower(c);
+    });
+
+    new_fle_nme_ = std::move(new_fle_nme);
+    new_fle_nme_ += extensn;
+}
+
+
+void target_file::print_rename(const std::filesystem::path& new_path, bool succs) const
+{
     std::cout << spd::ios::set_light_blue_text << "Renaming "
-              << spd::ios::set_yellow_text << fle_pth_.filename()
+              << spd::ios::set_yellow_text << actual_fle_pth_.filename()
               << spd::ios::set_light_blue_text << " --> "
-              << spd::ios::set_yellow_text << new_fle_pth.filename()
+              << spd::ios::set_yellow_text << new_path.filename()
               << spd::ios::set_light_blue_text << " ...";
-              
-    if ((res = ::rename(fle_pth_.c_str(), new_fle_pth.c_str())) == 0)
+
+    if (succs)
     {
-        fle_pth_ = new_fle_pth;
-        
         std::cout << spd::ios::set_light_green_text << "[ok]" << spd::ios::newl;
     }
     else
     {
         std::cout << spd::ios::set_light_red_text << "[fail]" << spd::ios::newl;
     }
-    
-    return res == 0;
 }
 
 
