@@ -24,6 +24,7 @@
  * @date        2024/05/19
  */
 
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -41,7 +42,6 @@ namespace metamorphosis {
 program::program(program_args prog_args) 
         : prog_args_(std::move(prog_args))
 {
-    target_file* fle_trg;
     std::size_t wdth;
     std::size_t hght;
     std::size_t digs;
@@ -50,29 +50,22 @@ program::program(program_args prog_args)
     {
         for (auto& fle : std::filesystem::directory_iterator(prog_args_.trg_dir))
         {
-            if (fle.is_regular_file())
+            const auto& fle_pth = fle.path();
+
+            if (!fle.is_regular_file() ||
+                !std::regex_match(fle_pth.filename().c_str(), prog_args_.fltr_regx) ||
+                fle_pth.filename().c_str()[0] == '.')
             {
-                std::filesystem::path fle_pth = fle.path();
+                continue;
+            }
 
-                if (!std::regex_match(fle_pth.filename().c_str(), prog_args_.fltr_regx))
-                {
-                    continue;
-                }
-
-                if (fle_pth.filename().c_str()[0] != '.')
-                {
-                    if ((is_jpeg_extension(fle_pth) || is_png_extension(fle_pth)) &&
-                        get_image_size(fle_pth, &wdth, &hght))
-                    {
-                        fle_trg = new target_image(std::move(fle_pth), &trg_fles_, wdth, hght);
-                    }
-                    else
-                    {
-                        fle_trg = new target_file(std::move(fle_pth), &trg_fles_);
-                    }
-
-                    trg_fles_.push_back(fle_trg);
-                }
+            if (get_image_size(fle_pth, &wdth, &hght))
+            {
+                trg_fles_.push_back(new target_image(fle_pth, this, wdth, hght));
+            }
+            else
+            {
+                trg_fles_.push_back(new target_file(fle_pth, this));
             }
         }
     }
@@ -118,7 +111,7 @@ int program::execute()
 
     std::cout << spd::ios::set_default_text;
     
-    return retv;
+    return !retv;
 }
 
 
@@ -145,37 +138,26 @@ void program::sort_sources()
 
 void program::set_new_file_names()
 {
-    std::size_t cur_bse_nme_idx;
-    std::size_t cur_bse_nr_idx;
     std::string nme_buildr;
-    bool fnd;
+    std::size_t max_sz = std::max(prog_args_.bse_nms.size(), prog_args_.bse_nrs.size());
 
     for (auto& trg_fle : trg_fles_)
     {
-        cur_bse_nme_idx = 0;
-        cur_bse_nr_idx = 0;
         nme_buildr.clear();
 
-        do
+        for (std::size_t idx = 0; idx < max_sz; ++idx)
         {
-            fnd = false;
-
-            if (prog_args_.bse_nms.size() > cur_bse_nme_idx)
+            if (idx < prog_args_.bse_nms.size())
             {
-                nme_buildr += prog_args_.bse_nms[cur_bse_nme_idx].get_name();
-                ++cur_bse_nme_idx;
-                fnd = true;
+                nme_buildr += prog_args_.bse_nms[idx].get_name();
             }
-            if (prog_args_.bse_nrs.size() > cur_bse_nr_idx)
+            if (idx < prog_args_.bse_nrs.size())
             {
-                nme_buildr += prog_args_.bse_nrs[cur_bse_nr_idx].get_next_number();
-                ++cur_bse_nr_idx;
-                fnd = true;
+                nme_buildr += prog_args_.bse_nrs[idx].get_next_number();
             }
+        }
 
-        } while (fnd);
-
-        trg_fle->set_new_file_name(nme_buildr);
+        trg_fle->set_new_file_name(std::move(nme_buildr));
     }
 }
 
@@ -183,16 +165,91 @@ void program::set_new_file_names()
 bool program::rename_target_files()
 {
     bool succs = true;
+    std::string contnue;
+
+    if (!prog_args_.skip_simu)
+    {
+        std::cout << spd::ios::set_light_green_text
+                  << "Starting simulation... "
+                  << spd::ios::newl;
+
+        for (auto& trg_fle : trg_fles_)
+        {
+            trg_fle->rename(true);
+        }
+
+        std::cout << "Do you want to continue? [Y/n] " << std::flush;
+        spd::ios::fpurge(stdin);
+        std::getline(std::cin, contnue);
+
+        if (contnue != "Y" && contnue != "y" && !contnue.empty())
+        {
+            return false;
+        }
+
+        for (auto& trg_fle : trg_fles_)
+        {
+            trg_fle->reset_rename();
+        }
+    }
 
     for (auto& trg_fle : trg_fles_)
     {
-        if (!trg_fle->rename())
+        if (!trg_fle->rename(false))
         {
             succs = false;
         }
     }
 
     return succs;
+}
+
+
+target_file* program::get_target_file_from_original_path(const std::filesystem::path& pth)
+{
+    for (auto& trg_fle : trg_fles_)
+    {
+        if (trg_fle->get_original_file_path() == pth)
+        {
+            return trg_fle;
+        }
+    }
+
+    return nullptr;
+}
+
+
+target_file* program::get_target_file_from_actual_path(const std::filesystem::path& pth)
+{
+    for (auto& trg_fle : trg_fles_)
+    {
+        if (trg_fle->get_actual_file_path() == pth)
+        {
+            return trg_fle;
+        }
+    }
+
+    return nullptr;
+}
+
+
+bool program::file_exists(const std::filesystem::path& path, bool simu)
+{
+    target_file* trg_fle;
+    bool exsts = std::filesystem::exists(path);
+
+    if (simu)
+    {
+        if (get_target_file_from_actual_path(path) != nullptr ||
+            (exsts && get_target_file_from_original_path(path) == nullptr))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    return exsts;
 }
 
 

@@ -33,8 +33,9 @@
 #include <speed/speed.hpp>
 
 #include "exception.hpp"
-#include "target_file.hpp"
+#include "forward_declarations.hpp"
 #include "program_args.hpp"
+#include "target_file.hpp"
 
 
 /**
@@ -70,11 +71,19 @@ private:
 
     bool rename_target_files();
 
+    target_file* get_target_file_from_original_path(const std::filesystem::path& pth);
+
+    target_file* get_target_file_from_actual_path(const std::filesystem::path& pth);
+
+    bool file_exists(const std::filesystem::path& path, bool simu);
+
 private:
     /** The program arguments. */
     program_args prog_args_;
 
     std::vector<target_file*> trg_fles_;
+
+    friend class target_file;
 };
 
 

@@ -32,17 +32,17 @@ namespace metamorphosis {
 
 bool sort_alphabeticaly::operator()(target_file* rhs, target_file* lhs) const
 {
-    if (rhs->get_file_path().empty())
+    if (rhs->get_actual_file_path().empty())
     {
-        return !lhs->get_file_path().empty();
+        return !lhs->get_actual_file_path().empty();
     }
-    else if (lhs->get_file_path().empty())
+    else if (lhs->get_actual_file_path().empty())
     {
         return false;
     }
 
-    return rhs->get_file_path().filename().string().compare(
-            lhs->get_file_path().filename().string()) < 0;
+    return rhs->get_actual_file_path().filename().string().compare(
+            lhs->get_actual_file_path().filename().string()) < 0;
 }
 
 
