@@ -3,6 +3,7 @@ set(METAMORPHOSIS_LIB_SOURCE_FILES
         base_number.cpp
         base_number.hpp
         exception.hpp
+        forward_declarations.hpp
         image_utils.cpp
         image_utils.hpp
         program.cpp
